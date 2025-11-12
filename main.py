@@ -1,6 +1,11 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import Any, Dict
+
+from schemas import Lead
+from database import create_document
 
 app = FastAPI()
 
@@ -19,6 +24,14 @@ def read_root():
 @app.get("/api/hello")
 def hello():
     return {"message": "Hello from the backend API!"}
+
+@app.post("/lead")
+def create_lead(lead: Lead) -> Dict[str, Any]:
+    try:
+        lead_id = create_document('lead', lead)
+        return {"status": "ok", "id": lead_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/test")
 def test_database():
